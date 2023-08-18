@@ -1,5 +1,21 @@
 <template>
   <div class="app-container">
+    <div class="query">
+      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+        <el-form-item label="账号">
+          <el-input v-model="formInline.loginCode" placeholder="账号" />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="formInline.loginName" placeholder="昵称" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="formInline.email" placeholder="邮箱" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">查询</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
     <el-table
       v-loading="listLoading"
       :data="list"
@@ -75,23 +91,42 @@ export default {
       pages: null,
       pageTotal: null,
       // 当前页码 默认值
-      currentPage: 1,
+      page: 1,
       // 页面大小 默认值，根据实际情况设置
-      pageSize: 10
+      pageSize: 10,
+      formInline: {
+        loignCode: '',
+        loginName: '',
+        email: ''
+      }
     }
   },
   created() {
     const data = {
-      page: this.currentPage,
+      page: this.page,
       pageSize: this.pageSize
     }
     this.fetchData(data)
   },
   methods: {
+    onSubmit() {
+      const data = {
+        loginCode: this.formInline.loginCode,
+        loginName: this.formInline.loginName,
+        email: this.formInline.email,
+        page: this.page,
+        pageSize: this.pageSize
+      }
+      console.log('submit!')
+      this.fetchData(data)
+    },
     handleSizeChange(newPageSize) {
       this.pageSize = newPageSize
       const data = {
-        page: this.currentPage,
+        loginCode: this.formInline.loginCode,
+        loginName: this.formInline.loginName,
+        email: this.formInline.email,
+        page: this.page,
         pageSize: newPageSize
       }
       // 发送网络请求给后端接口，将新的页码传递过去
@@ -100,9 +135,12 @@ export default {
 
     handlePageChange(newPage) {
       // 当页码改变时，触发该方法
-      this.currentPage = newPage
+      this.page = newPage
       const data = {
-        page: this.currentPage,
+        loginCode: this.formInline.loginCode,
+        loginName: this.formInline.loginName,
+        email: this.formInline.email,
+        page: this.page,
         pageSize: this.pageSize
       }
       // 发送网络请求给后端接口，将新的页码传递过去
@@ -128,6 +166,10 @@ export default {
   width: calc(100% - 40px);
    /* 设置左右 20px 的外边距 */
   margin: 0 20px;
+}
+
+.app-container .query{
+  margin-bottom: 12px;
 }
 
 .el-pagination{
