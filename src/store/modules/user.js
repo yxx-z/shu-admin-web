@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
@@ -19,23 +20,18 @@ const mutations = {
         Object.assign(state, getDefaultState())
     },
     SET_TOKEN: (state, token) => {
-        console.log('token= ', token)
         state.token = token
     },
     SET_NAME: (state, name) => {
-        console.log('name= ', name)
         state.name = name
     },
     SET_AVATAR: (state, avatar) => {
-        console.log('avatar= ', avatar)
         state.avatar = avatar
     },
     SET_EMAIL: (state, email) => {
-        console.log('email= ', email)
         state.email = email
     },
     SET_UID: (state, uid) => {
-        console.log('uid= ', uid)
         state.uid = uid
     }
 }

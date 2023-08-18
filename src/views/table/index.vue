@@ -50,6 +50,7 @@
         </template>
       </el-table-column>
     </el-table>
+    <el-pagination background layout="sizes, prev, pager, next" :page-sizes="[10, 20, 50, 100]" :page-size="10" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
   </div>
 </template>
 
@@ -70,24 +71,47 @@ export default {
   data() {
     return {
       list: null,
-      listLoading: true
+      listLoading: true,
+      pages: null,
+      pageTotal: null,
+      currentPage: 1, // 当前页码
+      totalPages: 10 // 总页数，根据实际情况设置
     }
   },
   created() {
-    this.fetchData()
+    const data = {
+      page: this.currentPage,
+      pageSize: this.totalPages
+    }
+    this.fetchData(data)
   },
   methods: {
-    fetchData() {
+    handleSizeChange(newPageSize) {
       const data = {
-        page: 1,
-        pageSize: 10
+        page: this.currentPage,
+        pageSize: newPageSize
       }
+      // 发送网络请求给后端接口，将新的页码传递过去
+      this.fetchData(data)
+    },
+
+    handlePageChange(newPage) {
+      // 当页码改变时，触发该方法
+      this.currentPage = newPage
+      const data = {
+        page: this.currentPage,
+        pageSize: this.totalPages
+      }
+      // 发送网络请求给后端接口，将新的页码传递过去
+      this.fetchData(data)
+    },
+
+    fetchData(data) {
       this.listLoading = true
-      console.log('============')
-      console.log(data)
-      console.log('============')
       getList(data).then(response => {
         this.list = response.data.records
+        this.pages = response.data.pages
+        this.pageTotal = response.data.total
         this.listLoading = false
       })
     }
@@ -101,6 +125,11 @@ export default {
   width: calc(100% - 40px);
    /* 设置左右 20px 的外边距 */
   margin: 0 20px;
+}
+
+.el-pagination{
+  margin-top: 20px;
+  text-align: center;
 }
 .custom-link {
   /* 设置链接之间的右侧边距 */
