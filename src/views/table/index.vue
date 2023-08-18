@@ -50,7 +50,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination background layout="sizes, prev, pager, next" :page-sizes="[10, 20, 50, 100]" :page-size="10" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
+    <el-pagination background layout="sizes, prev, pager, next" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
   </div>
 </template>
 
@@ -74,19 +74,22 @@ export default {
       listLoading: true,
       pages: null,
       pageTotal: null,
-      currentPage: 1, // 当前页码
-      totalPages: 10 // 总页数，根据实际情况设置
+      // 当前页码 默认值
+      currentPage: 1,
+      // 页面大小 默认值，根据实际情况设置
+      pageSize: 10
     }
   },
   created() {
     const data = {
       page: this.currentPage,
-      pageSize: this.totalPages
+      pageSize: this.pageSize
     }
     this.fetchData(data)
   },
   methods: {
     handleSizeChange(newPageSize) {
+      this.pageSize = newPageSize
       const data = {
         page: this.currentPage,
         pageSize: newPageSize
@@ -100,7 +103,7 @@ export default {
       this.currentPage = newPage
       const data = {
         page: this.currentPage,
-        pageSize: this.totalPages
+        pageSize: this.pageSize
       }
       // 发送网络请求给后端接口，将新的页码传递过去
       this.fetchData(data)
