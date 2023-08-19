@@ -66,7 +66,7 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination background layout="sizes, prev, pager, next" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
+    <el-pagination background layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
   </div>
 </template>
 
