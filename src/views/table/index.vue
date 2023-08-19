@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="query">
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+      <el-form ref="queryForm" :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="账号">
           <el-input v-model="formInline.loginCode" placeholder="账号" />
         </el-form-item>
@@ -13,6 +13,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onSubmit">查询</el-button>
+          <el-button @click="resetForm">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -64,8 +65,10 @@
           <el-popconfirm class="editButton" title="确定下线该用户吗？" @confirm="handleOff(scope.row.id)">
             <el-button slot="reference" type="primary" size="mini">下线</el-button>
           </el-popconfirm>
-          <el-popconfirm class="editButton" icon="el-icon-warning" icon-color="red" title="确定封禁该用户吗？" @click="handleEdit(scope.row.id)">
-            <el-button slot="reference" type="danger" size="mini">封禁</el-button>
+          <el-popconfirm class="editButton" icon="el-icon-warning" title="确定封禁该用户吗？" @confirm="handleBanned(scope.row.id)">
+            <!-- <el-button slot="reference" type="danger" size="mini">封禁</el-button> -->
+            <el-button v-if="scope.row.disable" slot="reference" type="warning" size="mini">解封</el-button>
+            <el-button v-else slot="reference" type="danger" size="mini">封禁</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
@@ -75,7 +78,7 @@
 </template>
 
 <script>
-import { getList, kickOut } from '@/api/table'
+import { getList, kickOut, banned } from '@/api/table'
 
 export default {
   filters: {
@@ -113,14 +116,33 @@ export default {
     this.fetchData(data)
   },
   methods: {
+    // // 重置
+    resetForm() {
+      this.formInline.loginCode = ''
+      this.formInline.loginName = ''
+      this.formInline.email = ''
+      const data = {
+        page: this.page,
+        pageSize: this.pageSize,
+        loginCode: this.loginCode,
+        loginName: this.loginName,
+        email: this.email
+      }
+      this.fetchData(data)
+    },
     // 下线用户
     handleOff(id) {
-      console.log('handleOff 方法被调用了,用户ID为:' + id)
-      console.log(id)
       const data = {
         id
       }
       this.kickOutMethod(data)
+    },
+    // 封禁用户
+    handleBanned(id) {
+      const data = {
+        id
+      }
+      this.bannedMethod(data)
     },
     // 条件搜索
     onSubmit() {
@@ -178,10 +200,37 @@ export default {
     kickOutMethod(data) {
       kickOut(data).then(response => {
         this.$message({
-          message: response.message,
+          message: '下线' + response.message,
           type: 'success',
           duration: 5 * 1000
         })
+        const data = {
+          loginCode: this.loginCode,
+          loginName: this.loginName,
+          email: this.email,
+          page: this.page,
+          pageSize: this.pageSize
+        }
+        this.fetchData(data)
+      })
+    },
+
+    // 封禁用户方法
+    bannedMethod(data) {
+      banned(data).then(response => {
+        this.$message({
+          message: '操作' + response.message,
+          type: 'success',
+          duration: 5 * 1000
+        })
+        const data = {
+          loginCode: this.loginCode,
+          loginName: this.loginName,
+          email: this.email,
+          page: this.page,
+          pageSize: this.pageSize
+        }
+        this.fetchData(data)
       })
     }
   }

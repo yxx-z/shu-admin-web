@@ -15,3 +15,11 @@ export function kickOut(data) {
     data
   })
 }
+
+export function banned(data) {
+  return request({
+    url: '/userManage/banned',
+    method: 'post',
+    data
+  })
+}
