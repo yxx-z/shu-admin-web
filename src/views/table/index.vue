@@ -29,12 +29,12 @@
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column label="账号" width="150" align="center">
+      <el-table-column label="账号" width="140" align="center">
         <template slot-scope="scope">
           {{ scope.row.loginCode }}
         </template>
       </el-table-column>
-      <el-table-column label="昵称" width="150" align="center">
+      <el-table-column label="昵称" width="140" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.loginName }}</span>
         </template>
@@ -44,12 +44,12 @@
           {{ scope.row.email }}
         </template>
       </el-table-column>
-      <el-table-column label="手机号" width="150" align="center">
+      <el-table-column label="手机号" width="140" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.linkPhone }}</span>
         </template>
       </el-table-column>
-      <el-table-column class-name="status-col" label="学号" width="150" align="center">
+      <el-table-column class-name="status-col" label="学号" width="140" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.studentNumber }}</span>
         </template>
