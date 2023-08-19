@@ -7,3 +7,11 @@ export function getList(data) {
     data
   })
 }
+
+export function kickOut(data) {
+  return request({
+    url: '/userManage/kickOut',
+    method: 'post',
+    data
+  })
+}

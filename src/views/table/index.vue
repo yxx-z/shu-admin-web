@@ -59,10 +59,14 @@
           <span>{{ scope.row.createTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="180">
+      <el-table-column align="center" label="操作" width="150">
         <template slot-scope="scope">
-          <el-button size="mini" type="warning" @click="handleEdit(scope.$index, scope.row)">踢下线</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)">禁止登录</el-button>
+          <el-popconfirm class="editButton" title="确定下线该用户吗？" @confirm="handleOff(scope.row.id)">
+            <el-button slot="reference" type="primary" size="mini">下线</el-button>
+          </el-popconfirm>
+          <el-popconfirm class="editButton" icon="el-icon-warning" icon-color="red" title="确定封禁该用户吗？" @click="handleEdit(scope.row.id)">
+            <el-button slot="reference" type="danger" size="mini">封禁</el-button>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
@@ -71,7 +75,7 @@
 </template>
 
 <script>
-import { getList } from '@/api/table'
+import { getList, kickOut } from '@/api/table'
 
 export default {
   filters: {
@@ -109,6 +113,16 @@ export default {
     this.fetchData(data)
   },
   methods: {
+    // 下线用户
+    handleOff(id) {
+      console.log('handleOff 方法被调用了,用户ID为:' + id)
+      console.log(id)
+      const data = {
+        id
+      }
+      this.kickOutMethod(data)
+    },
+    // 条件搜索
     onSubmit() {
       const data = {
         loginCode: this.formInline.loginCode,
@@ -120,6 +134,8 @@ export default {
       console.log('submit!')
       this.fetchData(data)
     },
+
+    // 更改分页页面大小
     handleSizeChange(newPageSize) {
       this.pageSize = newPageSize
       const data = {
@@ -147,6 +163,7 @@ export default {
       this.fetchData(data)
     },
 
+    // 分页方法
     fetchData(data) {
       this.listLoading = true
       getList(data).then(response => {
@@ -154,6 +171,17 @@ export default {
         this.pages = response.data.pages
         this.pageTotal = response.data.total
         this.listLoading = false
+      })
+    },
+
+    // 下线用户方法
+    kickOutMethod(data) {
+      kickOut(data).then(response => {
+        this.$message({
+          message: response.message,
+          type: 'success',
+          duration: 5 * 1000
+        })
       })
     }
   }
@@ -170,6 +198,11 @@ export default {
 
 .app-container .query{
   margin-bottom: 12px;
+}
+
+.editButton {
+  margin-right: 4px;
+  margin-left: 4px;
 }
 
 .el-pagination{
