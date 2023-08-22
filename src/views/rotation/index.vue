@@ -124,17 +124,17 @@
       <el-table-column align="center" label="操作" width="150">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="editRowData(scope.row)">编辑</el-button>
-          <el-dialog title="编辑轮播图" :visible.sync="editFormVisible">
+          <el-dialog title="编辑轮播图" :visible.sync="editFormVisible" class="edit-custom-dialog">
             <el-form ref="editForm" :model="editForm">
-              <el-form-item label="排序" style="margin-bottom: 15px;">
-                <el-input v-model="editForm.sort" autocomplete="off" style="width: 310px;" />
+              <el-form-item label="排序" style="margin-bottom: 15px;" label-width="200px">
+                <el-input v-model="editForm.sort" autocomplete="off" style="margin-left: -10px;margin-right: 140px; width: 400px;" />
               </el-form-item>
               <br>
-              <el-form-item label="时间" style="margin-bottom: 15px;">
-                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" format="yyyy-MM-dd HH:mm:ss" style="width: 310px;" />
+              <el-form-item label="时间" style="margin-bottom: 15px;" label-width="200px">
+                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" format="yyyy-MM-dd HH:mm:ss" style="margin-left: -10px;margin-right: 140px; width: 400px;" />
               </el-form-item>
             </el-form>
-            <div slot="footer">
+            <div slot="footer" class="dialog-footer">
               <el-button @click="clearEditForm">取 消</el-button>
               <el-button type="primary" @click="saveEditForm">确 定</el-button>
             </div>
@@ -498,10 +498,26 @@ export default {
     align-items: center;
     height: 100%;
     overflow: auto;
+    top: -120px;
+  }
+
+  .edit-custom-dialog {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    overflow: auto;
+    top: -180px;
   }
 
   /* 自定义弹窗的标题样式 */
   .custom-dialog .el-dialog__header {
+    background-color: #409EFF; /* 设置标题栏背景颜色 */
+    color: #fff; /* 设置标题栏文字颜色 */
+  }
+
+  /* 自定义弹窗的标题样式 */
+  .edit-custom-dialog .el-dialog__header {
     background-color: #409EFF; /* 设置标题栏背景颜色 */
     color: #fff; /* 设置标题栏文字颜色 */
   }
@@ -512,8 +528,18 @@ export default {
     padding: 20px;
   }
 
+  .edit-custom-dialog .el-dialog__body {
+    /* 设置内容区域内边距 */
+    padding: 20px;
+  }
+
   /* 自定义底部按钮样式 */
   .custom-dialog .el-dialog__footer {
+    text-align: center; /* 设置按钮居中对齐 */
+  }
+
+  /* 自定义底部按钮样式 */
+  .edit-custom-dialog .el-dialog__footer {
     text-align: center; /* 设置按钮居中对齐 */
   }
 
