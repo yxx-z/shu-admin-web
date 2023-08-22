@@ -78,14 +78,14 @@ export const constantRoutes = [
   },
 
   {
-    path: '/form',
+    path: '/rotation',
     component: Layout,
     children: [
       {
         path: 'index',
         name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: '来自', icon: 'form' }
+        component: () => import('@/views/rotation/index'),
+        meta: { title: '轮播图', icon: 'form' }
       }
     ]
   },

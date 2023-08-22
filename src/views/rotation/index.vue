@@ -1,18 +1,5 @@
 <template>
   <div class="app-container">
-    <el-upload
-      class="upload"
-      drag
-      action="http://127.0.0.1:6059/file/upload"
-      :headers="header"
-      multiple
-      :on-success="handleSuccess"
-      :show-file-list="show"
-    >
-      <i class="el-icon-upload" />
-      <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-      <div slot="tip" class="el-upload__tip">只能上传jpg/png文件, 且不超过10MB</div>
-    </el-upload>
 
     <div class="query">
       <el-form ref="queryForm" :inline="true" :model="formInline" class="demo-form-inline">
@@ -32,8 +19,39 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">查询</el-button>
-          <el-button @click="resetForm">重置</el-button>
+          <el-button :round="true" type="primary" @click="onSubmit">查询</el-button>
+          <el-button :round="true" type="info" @click="resetForm">重置</el-button>
+
+          <el-button :round="true" type="danger" @click="dialogFormVisible = true">新增</el-button>
+          <el-dialog title="新增轮播图" :visible.sync="dialogFormVisible" class="custom-dialog">
+            <el-form ref="dialogForm" :model="form">
+              <el-form-item label="排序" style="margin-bottom: 15px;">
+                <el-input v-model="form.sort" autocomplete="off" style="margin-left: 10px;width: 310px;" />
+              </el-form-item>
+              <br>
+              <el-form-item label="时间" style="margin-bottom: 15px;">
+                <el-date-picker v-model="form.validTime" type="datetime" placeholder="选择过期时间" style="margin-left: 10px;width: 310px;" />
+              </el-form-item>
+              <el-upload
+                class="upload"
+                drag
+                action="http://127.0.0.1:6059/file/upload"
+                :headers="header"
+                multiple
+                :on-success="handleSuccess"
+                :show-file-list="show"
+              >
+                <i class="el-icon-upload" />
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                <div slot="tip" class="el-upload__tip">只能上传jpg/png文件, 且不超过10MB</div>
+              </el-upload>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogFormVisible = false">取 消</el-button>
+              <el-button type="primary" @click="sendDataToBackend">确 定</el-button>
+            </div>
+          </el-dialog>
+
         </el-form-item>
       </el-form>
     </div>
@@ -52,7 +70,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="轮播图ID" width="140" align="center">
+      <el-table-column label="轮播图ID" width="100" align="center">
         <template slot-scope="scope">
           {{ scope.row.id }}
         </template>
@@ -60,8 +78,7 @@
 
       <el-table-column label="文件" width="400" align="center">
         <template slot-scope="scope">
-          <!-- <span>{{ scope.row.fileUrl }}</span> -->
-          <el-image :src="scope.row.fileUrl" :preview-src-list="[scope.row.fileUrl]" />
+          <el-image :src="scope.row.fileUrl" :preview-src-list="[scope.row.fileUrl]" style="max-height: 180px; width: auto;" />
         </template>
       </el-table-column>
 
@@ -71,9 +88,16 @@
         </template>
       </el-table-column>
 
-      <el-table-column class-name="status-col" label="排序" width="140" align="center">
+      <el-table-column class-name="status-col" label="排序" width="auto" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.sort }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="过期时间" width="180" align="center">
+        <template slot-scope="scope">
+          <i class="el-icon-time" />
+          <span style="margin-left: 10px">{{ scope.row.validTime }}</span>
         </template>
       </el-table-column>
 
@@ -106,12 +130,13 @@
 
     </el-table>
     <el-pagination background layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
+    <!---->
   </div>
 </template>
 
 <script>
 import { getToken } from '@/utils/auth'
-import { rotationPage, fileDel, onLine } from '@/api/file'
+import { rotationPage, fileDel, onLine, saveRotation } from '@/api/file'
 
 export default {
   data() {
@@ -133,6 +158,13 @@ export default {
       show: true,
       header: {
         Authorization: getToken()
+      },
+      dialogTableVisible: false,
+      dialogFormVisible: false,
+      form: {
+        sort: null,
+        validTime: null,
+        fileId: null
       }
     }
   },
@@ -152,13 +184,39 @@ export default {
       // file 是当前上传的文件对象
       // fileList 是上传文件列表
       // 处理上传成功后的逻辑，例如更新界面或保存文件信息
-      console.log('文件上传成功', response)
+      this.form.fileId = response.data[0].id
       this.$message({
         message: '上传' + response.message,
         type: 'success',
         duration: 5 * 1000
       })
-      this.show = false
+    },
+
+    // 新增唤起的弹窗 保存按钮事件
+    sendDataToBackend() {
+      if (this.form.fileId === null) {
+        this.$message.error('请先上传图片')
+      } else {
+        this.saveRotationMethod(this.form)
+        this.dialogFormVisible = false
+      }
+    },
+
+    // 保存轮播图
+    saveRotationMethod(data) {
+      this.listLoading = true
+      saveRotation(data).then(response => {
+        this.$message({
+          message: '保存' + response.message,
+          type: 'success',
+          duration: 5 * 1000
+        })
+      })
+      const req = {
+        page: this.page,
+        pageSize: this.pageSize
+      }
+      this.fetchData(req)
     },
 
     // 分页查询
@@ -223,6 +281,7 @@ export default {
       this.formInline.onLine = null
       this.formInline.id = null
       this.formInline.fileName = null
+      this.formInline.fileStatus = null
       const data = {
         page: this.page,
         pageSize: this.pageSize,
@@ -303,30 +362,6 @@ export default {
     padding: 20px;
   }
 
-  .upload {
-    border: 2px dashed #d9d9d9;
-    border-radius: 6px;
-    padding: 20px;
-    cursor: pointer;
-    margin-bottom: 20px;
-  }
-
-  .upload i.el-icon-upload {
-    font-size: 40px;
-    color: #3399ff;
-  }
-
-  .el-upload__text {
-    font-size: 16px;
-    margin-top: 10px;
-  }
-
-  .el-upload__tip {
-    font-size: 14px;
-    margin-top: 10px;
-    color: #999;
-  }
-
   .query{
     margin-bottom: 12px;
   }
@@ -335,5 +370,30 @@ export default {
     margin-right: 7px;
     margin-left: 7px;
   }
+
+  .custom-dialog {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%; /* 让外部最大弹窗占据整个可见窗口的高度 */
+    overflow: auto; /* 如果内容过多，允许滚动 */
+  }
+
+  /* 自定义弹窗的标题样式 */
+  .custom-dialog .el-dialog__header {
+    background-color: #409EFF; /* 设置标题栏背景颜色 */
+    color: #fff; /* 设置标题栏文字颜色 */
+  }
+
+  /* 自定义弹窗的内容样式 */
+  .custom-dialog .el-dialog__body {
+    padding: 20px; /* 设置内容区域内边距 */
+  }
+
+  /* 自定义底部按钮样式 */
+  .custom-dialog .el-dialog__footer {
+    text-align: center; /* 设置按钮居中对齐 */
+  }
+
 </style>
 

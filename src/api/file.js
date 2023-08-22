@@ -39,3 +39,12 @@ export function onLine(data) {
     data
   })
 }
+
+// 上下线
+export function saveRotation(data) {
+  return request({
+    url: '/rotation/save',
+    method: 'post',
+    data
+  })
+}
