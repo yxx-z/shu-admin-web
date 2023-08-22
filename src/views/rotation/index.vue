@@ -35,7 +35,7 @@
               <el-upload
                 class="upload"
                 drag
-                action="http://127.0.0.1:6059/file/upload"
+                action="https://api.shu.edu.rs/file/upload"
                 :headers="header"
                 multiple
                 :on-success="handleSuccess"
