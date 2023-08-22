@@ -124,17 +124,17 @@
       <el-table-column align="center" label="操作" width="150">
         <template slot-scope="scope">
           <el-button type="primary" size="mini" @click="editRowData(scope.row)">编辑</el-button>
-          <el-dialog title="编辑轮播图" :visible.sync="editFormVisible" class="custom-dialog">
+          <el-dialog title="编辑轮播图" :visible.sync="editFormVisible">
             <el-form ref="editForm" :model="editForm">
               <el-form-item label="排序" style="margin-bottom: 15px;">
-                <el-input v-model="editForm.sort" autocomplete="off" style="text-align: right; margin-left: 10px;width: 310px;" />
+                <el-input v-model="editForm.sort" autocomplete="off" style="width: 310px;" />
               </el-form-item>
               <br>
               <el-form-item label="时间" style="margin-bottom: 15px;">
-                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" format="yyyy-MM-dd HH:mm:ss" style="margin-left: 10px;width: 310px;" />
+                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" format="yyyy-MM-dd HH:mm:ss" style="width: 310px;" />
               </el-form-item>
             </el-form>
-            <div slot="footer" class="dialog-footer">
+            <div slot="footer">
               <el-button @click="clearEditForm">取 消</el-button>
               <el-button type="primary" @click="saveEditForm">确 定</el-button>
             </div>
@@ -496,8 +496,8 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%; /* 让外部最大弹窗占据整个可见窗口的高度 */
-    overflow: auto; /* 如果内容过多，允许滚动 */
+    height: 100%;
+    overflow: auto;
   }
 
   /* 自定义弹窗的标题样式 */
@@ -508,7 +508,8 @@ export default {
 
   /* 自定义弹窗的内容样式 */
   .custom-dialog .el-dialog__body {
-    padding: 20px; /* 设置内容区域内边距 */
+    /* 设置内容区域内边距 */
+    padding: 20px;
   }
 
   /* 自定义底部按钮样式 */
