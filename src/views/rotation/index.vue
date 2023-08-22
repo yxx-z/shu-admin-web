@@ -39,7 +39,9 @@
                 :headers="header"
                 multiple
                 :on-success="handleSuccess"
+                :on-change="handleChange"
                 :show-file-list="show"
+                :file-list="fileList"
               >
                 <i class="el-icon-upload" />
                 <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
@@ -47,7 +49,7 @@
               </el-upload>
             </el-form>
             <div slot="footer" class="dialog-footer">
-              <el-button @click="dialogFormVisible = false">取 消</el-button>
+              <el-button @click="clearForm">取 消</el-button>
               <el-button type="primary" @click="sendDataToBackend">确 定</el-button>
             </div>
           </el-dialog>
@@ -130,7 +132,6 @@
 
     </el-table>
     <el-pagination background layout="total, sizes, prev, pager, next, jumper" :page-sizes="[10, 20, 50, 100]" :page-size="pageSize" :pager-count="5" :page-count="pages" :total="pageTotal" @current-change="handlePageChange" @size-change="handleSizeChange" />
-    <!---->
   </div>
 </template>
 
@@ -184,12 +185,22 @@ export default {
       // file 是当前上传的文件对象
       // fileList 是上传文件列表
       // 处理上传成功后的逻辑，例如更新界面或保存文件信息
-      this.form.fileId = response.data[0].id
-      this.$message({
-        message: '上传' + response.message,
-        type: 'success',
-        duration: 5 * 1000
-      })
+      if (response.code !== 200) {
+        this.fileList = []
+        this.$message.error(response.message)
+      } else {
+        this.form.fileId = response.data[0].id
+        this.$message({
+          message: '上传' + response.message,
+          type: 'success',
+          duration: 5 * 1000
+        })
+      }
+    },
+
+    // 多次上传 取最后上传的文件数据
+    handleChange(file, fileList) {
+      this.fileList = fileList.slice(-1)
     },
 
     // 新增唤起的弹窗 保存按钮事件
@@ -197,7 +208,12 @@ export default {
       if (this.form.fileId === null) {
         this.$message.error('请先上传图片')
       } else {
-        this.saveRotationMethod(this.form)
+        const data = {
+          fileId: this.form.fileId,
+          sort: this.form.sort,
+          validTime: this.form.validTime
+        }
+        this.saveRotationMethod(data)
         this.dialogFormVisible = false
       }
     },
@@ -212,11 +228,23 @@ export default {
           duration: 5 * 1000
         })
       })
+      // 刷新页面
       const req = {
         page: this.page,
         pageSize: this.pageSize
       }
       this.fetchData(req)
+      this.clearForm()
+    },
+
+    // 清空表单数据
+    clearForm() {
+      // 清空上传列表
+      this.fileList = []
+      this.form.sort = null
+      this.form.validTime = null
+      this.form.fileId = null
+      this.dialogFormVisible = false
     },
 
     // 分页查询
@@ -324,11 +352,9 @@ export default {
     // 改变文件上下线状态时调用的事件
     changeFileStatus(id) {
       // 调用改变状态方法
-      console.log(id)
       const data = {
         id: id
       }
-      console.log(data)
       this.onLineMethod(data)
     },
 
