@@ -30,7 +30,7 @@
               </el-form-item>
               <br>
               <el-form-item label="时间" style="margin-bottom: 15px;">
-                <el-date-picker v-model="form.validTime" type="datetime" placeholder="选择过期时间" style="margin-left: 10px;width: 310px;" />
+                <el-date-picker v-model="form.validTime" type="datetime" placeholder="选择过期时间" format="yyyy-MM-dd HH:mm:ss" style="margin-left: 10px;width: 310px;" />
               </el-form-item>
               <el-upload
                 class="upload"
@@ -123,15 +123,15 @@
 
       <el-table-column align="center" label="操作" width="150">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini" @click="editRowData(scope.row.id)">编辑</el-button>
+          <el-button type="primary" size="mini" @click="editRowData(scope.row)">编辑</el-button>
           <el-dialog title="编辑轮播图" :visible.sync="editFormVisible" class="custom-dialog">
             <el-form ref="editForm" :model="editForm">
               <el-form-item label="排序" style="margin-bottom: 15px;">
-                <el-input v-model="editForm.sort" autocomplete="off" style="margin-left: 10px;width: 310px;" />
+                <el-input v-model="editForm.sort" autocomplete="off" style="text-align: right; margin-left: 10px;width: 310px;" />
               </el-form-item>
               <br>
               <el-form-item label="时间" style="margin-bottom: 15px;">
-                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" style="margin-left: 10px;width: 310px;" />
+                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" format="yyyy-MM-dd HH:mm:ss" style="margin-left: 10px;width: 310px;" />
               </el-form-item>
             </el-form>
             <div slot="footer" class="dialog-footer">
@@ -154,6 +154,7 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { rotationPage, fileDel, onLine, saveRotation, editRotation } from '@/api/file'
+import moment from 'moment'
 
 export default {
   data() {
@@ -226,18 +227,20 @@ export default {
 
     editRowData(data) {
       this.editFormVisible = true
-      this.id = data
+      this.id = data.id
+      this.editForm.sort = data.sort
+      this.editForm.validTime = data.validTime
     },
 
     // 编辑保存
     saveEditForm() {
+      const localDateTime = moment(this.editForm.validTime).format('YYYY-MM-DDTHH:mm:ss')
       const data = {
         id: this.id,
         sort: this.editForm.sort,
-        validTime: this.editForm.validTime
+        validTime: localDateTime
       }
       this.editRotation(data)
-      this.editFormVisible = false
     },
 
     // 新增唤起的弹窗 保存按钮事件
@@ -245,13 +248,13 @@ export default {
       if (this.form.fileId === null) {
         this.$message.error('请先上传图片')
       } else {
+        const localDateTime = moment(this.form.validTime).format('YYYY-MM-DDTHH:mm:ss')
         const data = {
           fileId: this.form.fileId,
           sort: this.form.sort,
-          validTime: this.form.validTime
+          validTime: localDateTime
         }
         this.saveRotationMethod(data)
-        this.dialogFormVisible = false
       }
     },
 
@@ -259,19 +262,19 @@ export default {
     saveRotationMethod(data) {
       this.listLoading = true
       saveRotation(data).then(response => {
-        this.$message({
-          message: '保存' + response.message,
-          type: 'success',
-          duration: 5 * 1000
-        })
+        if (response.code !== 200) {
+          this.$message.error(response.message)
+        } else {
+          this.$message({
+            message: '保存' + response.message,
+            type: 'success',
+            duration: 5 * 1000
+          })
+          this.dialogFormVisible = false
+          // 刷新页面
+          this.clearForm()
+        }
       })
-      // 刷新页面
-      const req = {
-        page: this.page,
-        pageSize: this.pageSize
-      }
-      this.fetchData(req)
-      this.clearForm()
     },
 
     // 编辑轮播图
@@ -286,15 +289,11 @@ export default {
             type: 'success',
             duration: 5 * 1000
           })
+          // 刷新页面
+          this.editFormVisible = false
+          this.clearEditForm()
         }
       })
-      // 刷新页面
-      const req = {
-        page: this.page,
-        pageSize: this.pageSize
-      }
-      this.fetchData(req)
-      this.clearEditForm()
     },
 
     // 清空表单数据
@@ -305,6 +304,15 @@ export default {
       this.form.validTime = null
       this.form.fileId = null
       this.dialogFormVisible = false
+
+      const req = {
+        id: this.formInline.id,
+        onLine: this.formInline.onLine,
+        fileStatus: this.formInline.fileStatus,
+        page: this.page,
+        pageSize: this.pageSize
+      }
+      this.fetchData(req)
     },
 
     // 清空编辑表单数据
@@ -312,16 +320,28 @@ export default {
       this.editForm.sort = null
       this.editForm.validTime = null
       this.editFormVisible = false
+      const req = {
+        id: this.formInline.id,
+        onLine: this.formInline.onLine,
+        fileStatus: this.formInline.fileStatus,
+        page: this.page,
+        pageSize: this.pageSize
+      }
+      this.fetchData(req)
     },
 
     // 分页查询
     fetchData(data) {
       this.listLoading = true
       rotationPage(data).then(response => {
-        this.list = response.data.records
-        this.pages = response.data.pages
-        this.pageTotal = response.data.total
-        this.listLoading = false
+        if (response.code !== 200) {
+          this.$message.error(response.message)
+        } else {
+          this.list = response.data.records
+          this.pages = response.data.pages
+          this.pageTotal = response.data.total
+          this.listLoading = false
+        }
       })
     },
 
@@ -400,19 +420,23 @@ export default {
     fileDelMethod(data) {
       this.listLoading = true
       fileDel(data).then(response => {
-        this.$message({
-          message: '删除' + response.message,
-          type: 'success',
-          duration: 5 * 1000
-        })
-        const data = {
-          page: this.page,
-          pageSize: this.pageSize,
-          onLine: this.formInline.onLine,
-          id: this.formInline.id,
-          fileName: this.formInline.fileName
+        if (response.code !== 200) {
+          this.$message.error(response.message)
+        } else {
+          this.$message({
+            message: '删除' + response.message,
+            type: 'success',
+            duration: 5 * 1000
+          })
+          const data = {
+            page: this.page,
+            pageSize: this.pageSize,
+            onLine: this.formInline.onLine,
+            id: this.formInline.id,
+            fileName: this.formInline.fileName
+          }
+          this.fetchData(data)
         }
-        this.fetchData(data)
       })
     },
 
@@ -429,19 +453,23 @@ export default {
     onLineMethod(data) {
       this.listLoading = true
       onLine(data).then(response => {
-        this.$message({
-          message: '操作' + response.message,
-          type: 'success',
-          duration: 5 * 1000
-        })
-        const data = {
-          page: this.page,
-          pageSize: this.pageSize,
-          onLine: this.formInline.onLine,
-          id: this.formInline.id,
-          fileName: this.formInline.fileName
+        if (response.code !== 200) {
+          this.$message.error(response.message)
+        } else {
+          this.$message({
+            message: '操作' + response.message,
+            type: 'success',
+            duration: 5 * 1000
+          })
+          const data = {
+            page: this.page,
+            pageSize: this.pageSize,
+            onLine: this.formInline.onLine,
+            id: this.formInline.id,
+            fileName: this.formInline.fileName
+          }
+          this.fetchData(data)
         }
-        this.fetchData(data)
       })
     }
 
