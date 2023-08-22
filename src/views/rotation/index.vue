@@ -123,7 +123,23 @@
 
       <el-table-column align="center" label="操作" width="150">
         <template slot-scope="scope">
-          <el-button type="primary" size="mini">编辑</el-button>
+          <el-button type="primary" size="mini" @click="editRowData(scope.row.id)">编辑</el-button>
+          <el-dialog title="编辑轮播图" :visible.sync="editFormVisible" class="custom-dialog">
+            <el-form ref="editForm" :model="editForm">
+              <el-form-item label="排序" style="margin-bottom: 15px;">
+                <el-input v-model="editForm.sort" autocomplete="off" style="margin-left: 10px;width: 310px;" />
+              </el-form-item>
+              <br>
+              <el-form-item label="时间" style="margin-bottom: 15px;">
+                <el-date-picker v-model="editForm.validTime" type="datetime" placeholder="选择过期时间" style="margin-left: 10px;width: 310px;" />
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="clearEditForm">取 消</el-button>
+              <el-button type="primary" @click="saveEditForm">确 定</el-button>
+            </div>
+          </el-dialog>
+
           <el-popconfirm class="editButton" icon="el-icon-warning" title="确定删除该图片吗？" @confirm="handleBanned(scope.row.id)">
             <el-button slot="reference" type="danger" size="mini">删除</el-button>
           </el-popconfirm>
@@ -137,7 +153,7 @@
 
 <script>
 import { getToken } from '@/utils/auth'
-import { rotationPage, fileDel, onLine, saveRotation } from '@/api/file'
+import { rotationPage, fileDel, onLine, saveRotation, editRotation } from '@/api/file'
 
 export default {
   data() {
@@ -160,13 +176,18 @@ export default {
       header: {
         Authorization: getToken()
       },
-      dialogTableVisible: false,
       dialogFormVisible: false,
+      editFormVisible: false,
+      editForm: {
+        sort: null,
+        validTime: null
+      },
       form: {
         sort: null,
         validTime: null,
         fileId: null
-      }
+      },
+      id: null
     }
   },
   // 进入页面后调用该方法
@@ -203,6 +224,22 @@ export default {
       this.fileList = fileList.slice(-1)
     },
 
+    editRowData(data) {
+      this.editFormVisible = true
+      this.id = data
+    },
+
+    // 编辑保存
+    saveEditForm() {
+      const data = {
+        id: this.id,
+        sort: this.editForm.sort,
+        validTime: this.editForm.validTime
+      }
+      this.editRotation(data)
+      this.editFormVisible = false
+    },
+
     // 新增唤起的弹窗 保存按钮事件
     sendDataToBackend() {
       if (this.form.fileId === null) {
@@ -237,6 +274,29 @@ export default {
       this.clearForm()
     },
 
+    // 编辑轮播图
+    editRotation(data) {
+      this.listLoading = true
+      editRotation(data).then(response => {
+        if (response.code !== 200) {
+          this.$message.error(response.message)
+        } else {
+          this.$message({
+            message: '编辑' + response.message,
+            type: 'success',
+            duration: 5 * 1000
+          })
+        }
+      })
+      // 刷新页面
+      const req = {
+        page: this.page,
+        pageSize: this.pageSize
+      }
+      this.fetchData(req)
+      this.clearEditForm()
+    },
+
     // 清空表单数据
     clearForm() {
       // 清空上传列表
@@ -245,6 +305,13 @@ export default {
       this.form.validTime = null
       this.form.fileId = null
       this.dialogFormVisible = false
+    },
+
+    // 清空编辑表单数据
+    clearEditForm() {
+      this.editForm.sort = null
+      this.editForm.validTime = null
+      this.editFormVisible = false
     },
 
     // 分页查询

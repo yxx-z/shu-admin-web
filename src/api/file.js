@@ -40,10 +40,19 @@ export function onLine(data) {
   })
 }
 
-// 上下线
+// 保存
 export function saveRotation(data) {
   return request({
     url: '/rotation/save',
+    method: 'post',
+    data
+  })
+}
+
+// 编辑
+export function editRotation(data) {
+  return request({
+    url: '/rotation/edit',
     method: 'post',
     data
   })
