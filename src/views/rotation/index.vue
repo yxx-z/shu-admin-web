@@ -234,7 +234,10 @@ export default {
 
     // 编辑保存
     saveEditForm() {
-      const localDateTime = moment(this.editForm.validTime).format('YYYY-MM-DDTHH:mm:ss')
+      let localDateTime = null
+      if (this.editForm.validTime !== null) {
+        localDateTime = moment(this.editForm.validTime).format('YYYY-MM-DDTHH:mm:ss')
+      }
       const data = {
         id: this.id,
         sort: this.editForm.sort,
@@ -248,7 +251,10 @@ export default {
       if (this.form.fileId === null) {
         this.$message.error('请先上传图片')
       } else {
-        const localDateTime = moment(this.form.validTime).format('YYYY-MM-DDTHH:mm:ss')
+        let localDateTime = null
+        if (this.editForm.validTime !== null) {
+          localDateTime = moment(this.editForm.validTime).format('YYYY-MM-DDTHH:mm:ss')
+        }
         const data = {
           fileId: this.form.fileId,
           sort: this.form.sort,
